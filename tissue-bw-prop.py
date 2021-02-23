@@ -56,6 +56,7 @@ def write_to_am_2(path_format, LT_to_print, t_b = None, t_e = None, length = 5, 
             new_pos: {id: [x, y, z]}, dictionary that maps a 3D position to a cell ID.
                 if new_pos == None (default) then LT_to_print.pos is considered.
     '''
+    print "write_to_am_2, from ", t_b, " to ", t_e
     if not hasattr(LT_to_print, 'to_take_time'):
         LT_to_print.to_take_time = LT_to_print.time_nodes
     if t_b is None:
@@ -122,24 +123,30 @@ def write_to_am_2(path_format, LT_to_print, t_b = None, t_e = None, length = 5, 
 def read_param_file():
     ''' Asks for, reads and formats the parameter file
     '''
-    p_param = raw_input('Please enter the path to the parameter file/folder:\n')
-    p_param = p_param.replace('"', '')
-    p_param = p_param.replace("'", '')
-    p_param = p_param.replace(" ", '')
-    if p_param[-4:] == '.csv':
-        f_names = [p_param]
-    else:
-        f_names = [os.path.join(p_param, f) for f in os.listdir(p_param) if '.csv' in f and not '~' in f]
+    if (sys.argv[1] is not None) and (sys.argv[1][-4:] == '.csv'):
+        f_names = [sys.argv[1]]
+        #print f_names + "\n"
+    else:    
+        p_param = raw_input('Please enter the path to the parameter file/folder:\n')
+        p_param = p_param.replace('"', '')
+        p_param = p_param.replace("'", '')
+        p_param = p_param.replace(" ", '')
+        if p_param[-4:] == '.csv':
+            f_names = [p_param]
+        else:
+            f_names = [os.path.join(p_param, f) for f in os.listdir(p_param) if '.csv' in f and not '~' in f]
     for file_name in f_names:
         f = open(file_name)
         lines = f.readlines()
         f.close()
         param_dict = {}
-        i = 0
+        i = 1
         nb_lines = len(lines)
+        delimeter = lines[0]
+        delimeter = delimeter.rstrip()        
         while i < nb_lines:
             l = lines[i]
-            split_line = l.split(',')
+            split_line = l.split(delimeter)
             param_name = split_line[0]
             if param_name in ['labels', 'downsampling']:
                 name = param_name
@@ -152,7 +159,7 @@ def read_param_file():
                     i += 1
                     if i < nb_lines:
                         l = lines[i]
-                        split_line = l.split(',')
+                        split_line = l.split(delimeter)
                         param_name = split_line[0]
                 param_dict[name] = np.array(out)
             elif param_name in ['label_names']:
@@ -288,11 +295,16 @@ if __name__ == '__main__':
      label_names, ani, invert) = read_param_file()
     if not os.path.exists(path_out_am):
         os.makedirs(path_out_am)
+    if not os.path.exists(path_DB):
+        os.makedirs(path_DB)
     if not os.path.exists('.mask_images/'):
         os.makedirs('.mask_images/')
     VF = lineageTree(path_VF)
     tb = VF.t_b
     te = VF.t_e
+    print "VF time nodes: ", len(VF.time_nodes), ", spanning ", tb, " to ", te
+    #for key, value in VF.time_nodes.iteritems() :
+    #    print key
 
     if path_bary is not None:
         try:
