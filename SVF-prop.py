@@ -233,9 +233,13 @@ def get_gabriel_graph_for_parallel(params):
         data_corres = {}
         data = []
         for i, C in enumerate(nodes):
+            if np.isnan(LT.pos[C][0]):
+                LT.pos[C][0] = 0
+                LT.pos[C][1] = 0
+                LT.pos[C][2] = 0
             data.append(LT.pos[C])
             data_corres[i] = C
-
+        #print( 'Delaunay data ', data )
         tmp = Delaunay(data)
 
         delaunay_graph = {}
@@ -259,7 +263,7 @@ def get_gabriel_graph_for_parallel(params):
 
     return t, Gabriel_graph
 
-def parallel_gabriel_graph_preprocess(LT, nb_proc = 24):
+def parallel_gabriel_graph_preprocess(LT, nb_proc = 8):
     ''' Computes the gabriel graphs for each time point of a lineage tree in parallel.
         The results is written in LT.Gabriel_graph
         Args:
@@ -275,9 +279,11 @@ def parallel_gabriel_graph_preprocess(LT, nb_proc = 24):
     for t in xrange(LT.t_b, LT.t_e + 1):
         if not LT.Gabriel_graph.has_key(t):
             mapping += [(t)]
+    #print( 'mapping: ', mapping )
     if nb_proc == 1:
         out = []
         for params in mapping:
+          print( 'running get_gabriel_graph_for_parallel for ', params )
           out += [get_gabriel_graph_for_parallel(params)]
     else:
         if nb_proc < 1:
@@ -334,7 +340,9 @@ def write_to_am_2(path_format, LT_to_print, t_b = None, t_e = None, length = 5, 
         t_e = max(LT_to_print.to_take_time.keys())
     if new_pos is None:
         new_pos = LT_to_print.pos
-
+    #for key, value in LT_to_print.to_take_time.iteritems() :
+    #    print key
+        
     if manual_labels is None:
         manual_labels = {}
     for t in range(t_b, t_e + 1):
@@ -518,25 +526,34 @@ def GG_from_bin(fname):
 def read_param_file():
     ''' Asks for, reads and formats the csv parameter file.
     '''
-    p_param = raw_input('Please enter the path to the parameter file/folder:\n')
-    p_param = p_param.replace('"', '')
-    p_param = p_param.replace("'", '')
-    p_param = p_param.replace(" ", '')
-    if p_param[-4:] == '.csv':
-        f_names = [p_param]
+    if (sys.argv[1] is not None) and (sys.argv[1][-4:] == '.csv'):
+        f_names = [sys.argv[1]]
+        #print f_names + "\n"
     else:
-        f_names = [os.path.join(p_param, f) for f in os.listdir(p_param) if '.csv' in f and not '~' in f]
+        p_param = raw_input('Please enter the path to the parameter file/folder:\n')
+        p_param = p_param.replace('"', '')
+        p_param = p_param.replace("'", '')
+        p_param = p_param.replace(" ", '')
+        if p_param[-4:] == '.csv':
+            f_names = [p_param]
+        else:
+            f_names = [os.path.join(p_param, f) for f in os.listdir(p_param) if '.csv' in f and not '~' in f]
+
     for file_name in f_names:
         f = open(file_name)
         lines = f.readlines()
         f.close()
         param_dict = {}
-        i = 0
+        i = 1 #first line is field delimeter
         nb_lines = len(lines)
+        delimeter = lines[0]
+        delimeter = delimeter.rstrip()
+        #print delimeter + "\n"
         while i < nb_lines:
             l = lines[i]
-            split_line = l.split(',')
+            split_line = l.split(delimeter)
             param_name = split_line[0]
+            #print l + "\n"
             if param_name in []:
                 name = param_name
                 out = []
@@ -545,10 +562,13 @@ def read_param_file():
                     i += 1
                     if i < nb_lines:
                         l = lines[i]
-                        split_line = l.split(',')
+                                                
+                        split_line = l.split(delimeter)
                         param_name = split_line[0]
                 param_dict[name] = np.array(out)
             else:
+                #print delimeter + "\n"
+                #print split_line[0] + "\n"
                 param_dict[param_name] = split_line[1].strip()
                 i += 1
             if param_name == 'anisotropy' or 'time' in param_name:
