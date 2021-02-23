@@ -1,6 +1,6 @@
 # SVF
 
-This repository contains the Statistical Vector Flow (SVF) framework and the tissue propagation software proposed in the article *In toto imaging and reconstruction of post-implantation mouse development at the single-cell level*.
+This repository contains the Statistical Vector Flow (SVF) framework and the tissue propagation software proposed in the article *In toto imaging and reconstruction of post-implantation mouse development at the single-cell level*.  It has been updated for facile use running from the terminal, for use with complex path names, and there are minor bugs fixes.
 
 ## Description of the repository
 Folders:
@@ -14,11 +14,11 @@ Python files:
 ## Basic usage
 Each of the python scripts proposed here can be run from a terminal in the following way:
 
-`python SVF-prop.py`
+`python SVF-prop.py csv-parameter-files/SVF-prop.csv`
 
-`python tissue-bw-prop.py`
+`python tissue-bw-prop.py csv-parameter-files/tissue-bw-prop.csv`
 
-The user is then prompted to provide a parameter csv file (examples provided in the folder csv-parameter-files). The path to the parameter file should then be typed in the terminal.
+The user should modify the parameter files prior to running with the correct information.  Note, the first line of each .csv parameter file contains the field delimeter used for the rest of the file; in other words, the user can use a different delimeter than `###` or `'` if desired.
 
 ## Dependencies
 Some dependecies are requiered:
