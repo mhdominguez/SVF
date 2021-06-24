@@ -188,7 +188,7 @@ def read_param_file():
         ani = np.float(param_dict.get('anisotropy', 1.))
         path_DB = param_dict.get('path_DB', '.')
         path_div = param_dict.get('path_div', None)
-        path_bary = param_dict.get('path_bary', None)
+        path_bary = param_dict.get('path_bary', '')
         label_names = param_dict.get('label_names', None)
         invert = param_dict.get('inverted', '1') != '0'
 
@@ -223,7 +223,7 @@ def get_division_mapping(path_div, VF):
             ass_div.update(dict(zip(div_C, d)))
     return ass_div
 
-def write_DB(path_DB, path_div, VF, tracking_value, tb, te):
+def write_DB(path_DB, path_div, VF, tracking_value, tb, te, path_bary):
     ''' Write the csv database in Database.csv
         Args:
             path_DB: string, path to the output database
@@ -233,6 +233,30 @@ def write_DB(path_DB, path_div, VF, tracking_value, tb, te):
             tb: int, first time point to write
             te: int, last time point to write
     '''
+    barycenters = {}
+    if path_bary is not None:
+        try:
+            barycenters, b_dict = get_barycenter(path_bary, tb, te)
+        except Exception as e:
+            print "Wrong file path to barycenter, please specify the path to the .csv file for manually-defined barycenters, if desired."
+            Q = []
+            for t in range(tb, te+1):
+                #Q = []
+                for c in VF.time_nodes[t]:
+                    Q += [VF.pos[c]]
+                    #barycenters[t] = np.median(Q,axis=0)
+            abs_barycenter = np.median(Q,axis=0)
+            #print len(Q), "and", len(Q[0])
+            print "The process will continue, by defining barycenter as median X,Y,Z across all time T:", abs_barycenter
+            #print "The process will continue, by defining barycenter as median X,Y,Z for each time point."
+            #print "The process will continue as if no barycenter were provided,"
+            #print "disabling the computation of the spherical coordinates"
+            #print "error raised: ", e
+            
+            for t in range(tb, te+1):
+                barycenters[t] = abs_barycenter 
+            ##path_bary = None
+            
     ass_div = get_division_mapping(path_div, VF)
     f2 = open(path_DB + 'Database-Tissues.csv', 'w')
     f2.write('id, mother_id, x, y, z, r, theta, phi, t, label, D-x, D-y, D-z, D-r, D-theta, D-phi\n')
@@ -244,6 +268,7 @@ def write_DB(path_DB, path_div, VF, tracking_value, tb, te):
             else:
                 M_id = -1
             P = tuple(VF.pos[c])
+            #print VF.pos[c]
             if path_bary is not None:
                 S_p = tuple(get_spherical_coordinates(*(barycenters[t] - VF.pos[c]))[:-1])
             L = tracking_value.get(c, -1)
@@ -306,16 +331,6 @@ if __name__ == '__main__':
     #for key, value in VF.time_nodes.iteritems() :
     #    print key
 
-    if path_bary is not None:
-        try:
-            barycenters, b_dict = get_barycenter(path_bary, tb, te)
-        except Exception as e:
-            print "Wrong file path to barycenter, please specify the path to the .csv file."
-            print "The process will continue as if no barycenter were provided,"
-            print "disabling the computation of the spherical coordinates"
-            print "error raised: ", e
-            path_bary = None
-
     im = imread(path_mask)
     for l in labels:
         masked_im = im == l
@@ -375,4 +390,4 @@ if __name__ == '__main__':
     for im_p in masks:
         os.remove(im_p)
 
-    write_DB(path_DB, path_div, VF, tracking_value, tb, te)
+    write_DB(path_DB, path_div, VF, tracking_value, tb, te, path_bary)
