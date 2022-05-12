@@ -56,7 +56,7 @@ def write_to_am_2(path_format, LT_to_print, t_b = None, t_e = None, length = 5, 
             new_pos: {id: [x, y, z]}, dictionary that maps a 3D position to a cell ID.
                 if new_pos == None (default) then LT_to_print.pos is considered.
     '''
-    print "write_to_am_2, from ", t_b, " to ", t_e
+    print("write_to_am_2, from ", t_b, " to ", t_e)
     if not hasattr(LT_to_print, 'to_take_time'):
         LT_to_print.to_take_time = LT_to_print.time_nodes
     if t_b is None:
@@ -76,7 +76,7 @@ def write_to_am_2(path_format, LT_to_print, t_b = None, t_e = None, length = 5, 
         for C in LT_to_print.to_take_time[t]:
             C_tmp = C
             positions = []
-            for i in xrange(length):
+            for i in range(length):
                 C_tmp = LT_to_print.predecessor.get(C_tmp, [C_tmp])[0]
                 positions.append(new_pos[C_tmp])
             points_v[C] = positions
@@ -127,7 +127,7 @@ def read_param_file():
         f_names = [sys.argv[1]]
         #print f_names + "\n"
     else:    
-        p_param = raw_input('Please enter the path to the parameter file/folder:\n')
+        p_param = input('Please enter the path to the parameter file/folder:\n')
         p_param = p_param.replace('"', '')
         p_param = p_param.replace("'", '')
         p_param = p_param.replace(" ", '')
@@ -215,12 +215,12 @@ def get_division_mapping(path_div, VF):
 
         div_in_VF = {}
         dist_to_div = {}
-        for t, d in divisions_per_time.iteritems():
+        for t, d in divisions_per_time.items():
             idx3d, data = VF.get_idx3d(t)
             dist, idxs = idx3d.query(d)
             div_C = np.array(data)[idxs]
-            dist_to_div.update(dict(zip(div_C, dist)))
-            ass_div.update(dict(zip(div_C, d)))
+            dist_to_div.update(dict(list(zip(div_C, dist))))
+            ass_div.update(dict(list(zip(div_C, d))))
     return ass_div
 
 def write_DB(path_DB, path_div, VF, tracking_value, tb, te, path_bary):
@@ -238,7 +238,7 @@ def write_DB(path_DB, path_div, VF, tracking_value, tb, te, path_bary):
         try:
             barycenters, b_dict = get_barycenter(path_bary, tb, te)
         except Exception as e:
-            print "Wrong file path to barycenter, please specify the path to the .csv file for manually-defined barycenters, if desired."
+            print("Wrong file path %s to barycenter, please specify the path to the .csv file for manually-defined barycenters, if desired."%path_bary)
             Q = []
             for t in range(tb, te+1):
                 #Q = []
@@ -247,7 +247,7 @@ def write_DB(path_DB, path_div, VF, tracking_value, tb, te, path_bary):
                     #barycenters[t] = np.median(Q,axis=0)
             abs_barycenter = np.median(Q,axis=0)
             #print len(Q), "and", len(Q[0])
-            print "The process will continue, by defining barycenter as median X,Y,Z across all time T:", abs_barycenter
+            print("The process will continue, by defining barycenter as median X,Y,Z across all time T:", abs_barycenter)
             #print "The process will continue, by defining barycenter as median X,Y,Z for each time point."
             #print "The process will continue as if no barycenter were provided,"
             #print "disabling the computation of the spherical coordinates"
@@ -309,7 +309,7 @@ def get_barycenter(fname, tb, te):
     Yb_f = interpolate.InterpolatedUnivariateSpline(times, Yb, k=1)
     Zb_f = interpolate.InterpolatedUnivariateSpline(times, Zb, k=1)
     Ti = np.arange(tb - 1, te + 2)
-    barycenters_interp = dict(zip(Ti, zip(Xb_f(Ti), Yb_f(Ti), Zb_f(Ti))))
+    barycenters_interp = dict(list(zip(Ti, list(zip(Xb_f(Ti), Yb_f(Ti), Zb_f(Ti))))))
 
     return barycenters_interp, barycenters
 
@@ -327,7 +327,7 @@ if __name__ == '__main__':
     VF = lineageTree(path_VF)
     tb = VF.t_b
     te = VF.t_e
-    print "VF time nodes: ", len(VF.time_nodes), ", spanning ", tb, " to ", te
+    print("VF time nodes: ", len(VF.time_nodes), ", spanning ", tb, " to ", te)
     #for key, value in VF.time_nodes.iteritems() :
     #    print key
 
@@ -362,7 +362,7 @@ if __name__ == '__main__':
                 init_cells[i].add(c)
 
     tracking_value = {}
-    for t, cs in init_cells.iteritems():
+    for t, cs in init_cells.items():
         for c in cs:
             to_treat = [c]
             tracking_value.setdefault(c, set()).add(t)
@@ -381,10 +381,10 @@ if __name__ == '__main__':
                 for n in next_cells:
                     tracking_value.setdefault(n, set()).add(t)
 
-    tracking_value = {k:np.sum(list(v)) for k, v in tracking_value.iteritems() if len(v) == 1}
+    tracking_value = {k:np.sum(list(v)) for k, v in tracking_value.items() if len(v) == 1}
 
     write_to_am_2(path_out_am + '/seg_t%04d.am', VF, t_b= tb, t_e= te,
-                manual_labels = tracking_value, default_label = np.max(tracking_value.values())+1,
+                manual_labels = tracking_value, default_label = np.max(list(tracking_value.values()))+1,
                 length = 7)
 
     for im_p in masks:

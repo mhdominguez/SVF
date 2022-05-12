@@ -1,6 +1,6 @@
 # SVF
 
-This repository contains the Statistical Vector Flow (SVF) framework and the tissue propagation software proposed in the article *In toto imaging and reconstruction of post-implantation mouse development at the single-cell level*.  It has been updated for facile use running from the terminal, for use with complex path names, and there are minor bugs fixes.
+This repository contains an update to the Statistical Vector Flow (SVF) package and the tissue propagation software published in *In toto imaging and reconstruction of post-implantation mouse development at the single-cell level*.  Now compatible with Python 3.x, it has been updated for easier terminal/console use, it can handle complex path names, and there are minor bugs fixes.
 
 ## Description of the repository
 Folders:

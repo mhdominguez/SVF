@@ -156,7 +156,7 @@ def build_VF_propagation_backward(LT, t_b=0, t_e=200, neighb_size=20, dist_max=2
         sys.stdout.write(prop_line%(time() - tic))
         sys.stdout.flush()
 
-        if not LT.spatial_density.has_key(to_check_LT[0]):
+        if to_check_LT[0] not in LT.spatial_density:
             LT.compute_spatial_density(t-1, t-1, neighb_size)
 
         idx3d, to_check_VF = LT.VF.get_idx3d(t-1)[:2]
@@ -185,12 +185,12 @@ def prune_tracks(VF, mapping_LT_to_VF):
                     onto its 10 closest objects in the SVF
     '''
     to_keep = {}
-    for v in mapping_LT_to_VF.itervalues():
+    for v in mapping_LT_to_VF.values():
         for c in v:
             to_keep[c] = True
 
     to_keep_tmp = {}
-    for c in to_keep.iterkeys():
+    for c in to_keep.keys():
         m = c
         d = c
         for i in range(5):
@@ -201,7 +201,7 @@ def prune_tracks(VF, mapping_LT_to_VF):
         to_keep_tmp[c] = True
 
     to_keep_final = {}
-    for c in to_keep_tmp.iterkeys():
+    for c in to_keep_tmp.keys():
         m = c
         d = c
         i = 0
@@ -227,7 +227,7 @@ def get_gabriel_graph_for_parallel(params):
     if not hasattr(LT, 'Gabriel_graph'):
         LT.Gabriel_graph = {}
 
-    if not LT.Gabriel_graph.has_key(t):
+    if t not in LT.Gabriel_graph:
         idx3d, nodes = LT.get_idx3d(t)
 
         data_corres = {}
@@ -252,7 +252,7 @@ def get_gabriel_graph_for_parallel(params):
 
         Gabriel_graph = {}
 
-        for e1, neighbs in delaunay_graph.iteritems():
+        for e1, neighbs in delaunay_graph.items():
             for ni in neighbs:
                 if not any([np.linalg.norm((data[ni] + data[e1])/2 - data[i])<np.linalg.norm(data[ni] - data[e1])/2
                         for i in delaunay_graph[e1].intersection(delaunay_graph[ni])]):
@@ -276,14 +276,14 @@ def parallel_gabriel_graph_preprocess(LT, nb_proc = 8):
     mapping = []
     if not hasattr(LT, 'Gabriel_graph'):
         LT.Gabriel_graph = {}
-    for t in xrange(LT.t_b, LT.t_e + 1):
-        if not LT.Gabriel_graph.has_key(t):
+    for t in range(LT.t_b, LT.t_e + 1):
+        if t not in LT.Gabriel_graph:
             mapping += [(t)]
     #print( 'mapping: ', mapping )
     if nb_proc == 1:
         out = []
         for params in mapping:
-          print( 'running get_gabriel_graph_for_parallel for ', params )
+          print(( 'running get_gabriel_graph_for_parallel for ', params ))
           out += [get_gabriel_graph_for_parallel(params)]
     else:
         if nb_proc < 1:
@@ -353,7 +353,7 @@ def write_to_am_2(path_format, LT_to_print, t_b = None, t_e = None, length = 5, 
         for C in LT_to_print.to_take_time[t]:
             C_tmp = C
             positions = []
-            for i in xrange(length):
+            for i in range(length):
                 if 0 < len(LT_to_print.predecessor.get(C_tmp, [C_tmp])):
                     C_tmp = LT_to_print.predecessor.get(C_tmp, [C_tmp])[0]
                 positions.append(new_pos[C_tmp])
@@ -477,10 +477,10 @@ def GG_to_bin(gg, fname):
     '''
     nodes_list = []
     time_list = []
-    for t, gg_t in gg.iteritems():
+    for t, gg_t in gg.items():
         time_list += [t]
         len_ = 0
-        for node, neighbors in gg_t.iteritems():
+        for node, neighbors in gg_t.items():
             to_add = [-(node + 1)] + [neighb + 1 for neighb in neighbors]
             nodes_list += to_add
             len_ += len(to_add)
@@ -530,7 +530,7 @@ def read_param_file():
         f_names = [sys.argv[1]]
         #print f_names + "\n"
     else:
-        p_param = raw_input('Please enter the path to the parameter file/folder:\n')
+        p_param = input('Please enter the path to the parameter file/folder:\n')
         p_param = p_param.replace('"', '')
         p_param = p_param.replace("'", '')
         p_param = p_param.replace(" ", '')
@@ -617,14 +617,14 @@ if __name__ == '__main__':
         tic = time()
         parallel_gabriel_graph_preprocess(LT_main)
         GG_to_bin(LT_main.Gabriel_graph, path_out + 'GG.bin')
-        print 'Gabriel graph pre-processing:',  time() - tic
+        print('Gabriel graph pre-processing:',  time() - tic)
     else:
         LT_main.Gabriel_graph = GG_from_bin(path_out + 'GG.bin')
 
     if not os.path.exists(path_out + 'SVF.bin'):
         tic = time()
         VF = build_VF_propagation_backward(LT_main, t_b = te, t_e = tb, neighb_size = 10, nb_proc=24)
-        print 'parallel processing:',  time() - tic
+        print('parallel processing:',  time() - tic)
 
         mapping_LT_to_VF = parallel_mapping(tb, te)
         prune_tracks(VF, mapping_LT_to_VF)
@@ -648,11 +648,11 @@ if __name__ == '__main__':
                 track_smoothed[:, 0] = X
                 track_smoothed[:, 1] = Y
                 track_smoothed[:, 2] = Z
-                smoothed_pos.update(zip(track, list(track_smoothed)))
+                smoothed_pos.update(list(zip(track, list(track_smoothed))))
                 done.update(set(track))
         
         to_remove = set()
-        for t, n in VF.to_take_time.iteritems():
+        for t, n in VF.to_take_time.items():
             to_remove.update(set(VF.time_nodes[t]).difference(n))
 
         VF.nodes = set(VF.nodes)
@@ -755,9 +755,8 @@ if __name__ == '__main__':
             track_smoothed[:, 0] = X
             track_smoothed[:, 1] = Y
             track_smoothed[:, 2] = Z
-            smoothed_pos.update(zip(track, list(track_smoothed)))
+            smoothed_pos.update(list(zip(track, list(track_smoothed))))
 
     write_to_am_2(path_out + 'Amira_TGMM/seg_t%04d.am', LT, t_b = None, t_e = None,
                   manual_labels = {}, default_label = 1, 
                   length = 7, new_pos = smoothed_pos)
-
