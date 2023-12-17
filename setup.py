@@ -13,16 +13,16 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='SVF',
-    version='1.0',
+    version='1.1',
     description='Statistical Vector Flow and the tissue propoagation scripts',
     long_description=long_description,
-    url='https://github.com/leoguignard/standalone-Mouse',
-    author='Leo Guignard',
+    url='https://github.com/mhdominguez/SVF',
+    author='Leo Guignard, Martin Dominguez',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.10',
     ],
     install_requires=['scipy', 'numpy']
 )
