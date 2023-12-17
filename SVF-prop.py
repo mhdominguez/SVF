@@ -526,7 +526,7 @@ def GG_from_bin(fname):
 def read_param_file():
     ''' Asks for, reads and formats the csv parameter file.
     '''
-    if (sys.argv[1] is not None) and (sys.argv[1][-4:] == '.csv'):
+    if (sys.argv[1] is not None) and (os.path.exists(sys.argv[1])):
         f_names = [sys.argv[1]]
         #print f_names + "\n"
     else:
@@ -534,48 +534,42 @@ def read_param_file():
         p_param = p_param.replace('"', '')
         p_param = p_param.replace("'", '')
         p_param = p_param.replace(" ", '')
-        if p_param[-4:] == '.csv':
+        if p_param[-4:] == '.txt':
             f_names = [p_param]
         else:
-            f_names = [os.path.join(p_param, f) for f in os.listdir(p_param) if '.csv' in f and not '~' in f]
+            f_names = [os.path.join(p_param, f) for f in os.listdir(p_param) if '.txt' in f and not '~' in f]
 
     for file_name in f_names:
         f = open(file_name)
         lines = f.readlines()
         f.close()
         param_dict = {}
-        i = 1 #first line is field delimeter
-        nb_lines = len(lines)
-        delimeter = lines[0]
-        delimeter = delimeter.rstrip()
-        #print delimeter + "\n"
-        while i < nb_lines:
-            l = lines[i]
-            split_line = l.split(delimeter)
-            param_name = split_line[0]
-            #print l + "\n"
-            if param_name in []:
-                name = param_name
-                out = []
-                while (name == param_name or param_name == '') and  i < nb_lines:
-                    out += [int(split_line[1])]
-                    i += 1
-                    if i < nb_lines:
-                        l = lines[i]
-                                                
-                        split_line = l.split(delimeter)
-                        param_name = split_line[0]
-                param_dict[name] = np.array(out)
-            else:
-                #print delimeter + "\n"
-                #print split_line[0] + "\n"
-                param_dict[param_name] = split_line[1].strip()
-                i += 1
+
+        for line in lines:
+            # Strip whitespace and ignore empty lines or lines starting with '#'
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+
+            # Split the line at '=' and strip whitespace
+            parts = line.split('=', 1)
+            if len(parts) != 2:
+                print(f"Warning: Line '{line}' is not in the expected format.")
+                continue
+
+            param_name, param_value = parts
+            param_name = param_name.strip()
+            param_value = param_value.split('#')[0].strip()  # Remove comment
+
             if param_name == 'anisotropy' or 'time' in param_name:
-                if split_line[1].isdigit():
-                    param_dict[param_name] = int(split_line[1])
+                if param_value.isdigit():
+                    param_dict[param_name] = int(param_value)
                 else:
-                    param_dict[param_name] = float(split_line[1])
+                    param_dict[param_name] = float(param_value)
+            else:
+                param_dict[param_name] = param_value
+            #print( param_name + '=' + param_value )
+
         path_to_xml = param_dict.get('path_to_xml', '.')
         path_out = param_dict.get('path_out', '.')
         anisotropy = param_dict.get('anisotropy', 1)
