@@ -148,7 +148,7 @@ def read_param_file():
             l = lines[i]
             split_line = l.split(delimeter)
             param_name = split_line[0]
-            if param_name in ['labels', 'downsampling']:
+            if param_name in ['tissues_pixel_values', 'downsampling']:
                 name = param_name
                 out = []
                 while (name == param_name or param_name == '') and  i < nb_lines:
@@ -183,7 +183,7 @@ def read_param_file():
         path_mask = param_dict.get('path_to_mask', '.')
         t = param_dict.get('time', 0)
         path_out_am = param_dict.get('path_to_am', '.')
-        labels = param_dict.get('labels', [])
+        labels = param_dict.get('tissues_pixel_values', [])
         DS = param_dict.get('downsampling', [])
         ani = np.float(param_dict.get('anisotropy', 1.))
         path_DB = param_dict.get('path_DB', '.')

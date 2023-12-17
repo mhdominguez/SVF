@@ -641,9 +641,9 @@ if __name__ == '__main__':
                 while track[0] in VF.predecessor:
                     track.insert(0, VF.predecessor[track[0]][0])
                 pos_track = np.array([VF.pos[Ci] for Ci in track])
-                X = sp.ndimage.filters.gaussian_filter1d(pos_track[:, 0], sigma = 5)
-                Y = sp.ndimage.filters.gaussian_filter1d(pos_track[:, 1], sigma = 5)
-                Z = sp.ndimage.filters.gaussian_filter1d(pos_track[:, 2], sigma = 5)
+                X = sp.ndimage.gaussian_filter1d(pos_track[:, 0], sigma = 5)
+                Y = sp.ndimage.gaussian_filter1d(pos_track[:, 1], sigma = 5)
+                Z = sp.ndimage.gaussian_filter1d(pos_track[:, 2], sigma = 5)
                 track_smoothed = np.zeros_like(pos_track)
                 track_smoothed[:, 0] = X
                 track_smoothed[:, 1] = Y
@@ -748,9 +748,9 @@ if __name__ == '__main__':
             all_tracks += [track]
             done.update(set(track))
             pos_track = np.array([LT.pos[Ci] for Ci in track])
-            X = sp.ndimage.filters.gaussian_filter1d(pos_track[:, 0], sigma = 5)
-            Y = sp.ndimage.filters.gaussian_filter1d(pos_track[:, 1], sigma = 5)
-            Z = sp.ndimage.filters.gaussian_filter1d(pos_track[:, 2], sigma = 5)
+            X = sp.ndimage.gaussian_filter1d(pos_track[:, 0], sigma = 5)
+            Y = sp.ndimage.gaussian_filter1d(pos_track[:, 1], sigma = 5)
+            Z = sp.ndimage.gaussian_filter1d(pos_track[:, 2], sigma = 5)
             track_smoothed = np.zeros_like(pos_track)
             track_smoothed[:, 0] = X
             track_smoothed[:, 1] = Y

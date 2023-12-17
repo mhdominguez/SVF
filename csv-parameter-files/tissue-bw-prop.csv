@@ -1,10 +1,10 @@
 ###
 path_to_LT###Outputs/Propagation/TGMM.bin###Location of TGMM.bin file from SVF
 path_to_VF###Outputs/Propagation/SVF.bin###Location of SVF.bin file from SVF
-path_to_mask###t00180_s00-mask.tif###Location of down-sampled image and masks
-time###0180###Time point containing masks
+path_to_mask###t00180_s00-mask.tif###Location of downsampled image from time below, contained masked regions to assign tissues based on pixel value below
+time###0180###Time point to assign tissues based on masks
 path_to_am###Outputs/Tissue_BW_output/###Output folder
-labels###0###Value of labels used to create masks
+tissues_pixel_values###0###Pixel value of regions used to assign tissues at time above
 ###255###
 downsampling###4###X_downsampling
 ###4###Y_downsampling
