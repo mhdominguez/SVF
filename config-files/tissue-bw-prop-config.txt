@@ -1,0 +1,11 @@
+path_to_LT = Outputs/Propagation/TGMM.bin	# Location of TGMM.bin file from SVF
+path_to_VF = Outputs/Propagation/SVF.bin	# Location of SVF.bin file from SVF
+path_to_mask = t00180_s00-mask.tif			# Location of downsampled image from time below, contained masked regions to assign tissues based on pixel value below
+time = 180									# Time point to assign tissues based on masks
+path_to_am = Outputs/Tissue_BW_output/		# Output folder
+tissues_pixel_values = [0,255]				# Pixel value of regions used to assign tissues at time above
+downsampling = [4,4,1]						# [x,y,z] downsampling of mask image relative to original tracked images (including anisotropy)
+inverted = 0								# inversion of the image (sometimes necessary depending on Fiji version for example)
+path_DB = Outputs/Tissue_BW_output_DB/		# Output folder for database
+anisotropy = 4								# Is multiplied by Z_downsampling to get final Z anisotropy
+path_bary = ./barys.csv						# Path to barycenter csv file containing "x,y,z,t" coordinates for each timepoint on each line; if file not found will use median point across all XYZT

@@ -1,6 +1,6 @@
-path_to_xml=XML_finalResult_lht/ 					#Path to the TGMM xmls
-path_out=Outputs/Propagation/						#Output folder for SVF propagation
-anisotropy=4										#Ratio of X and Y to Z (should be same as TGMM)
-path_bin_TGMM=Outputs/Propagation/TGMM_nonexistant_until_SVF_runs.bin	#Path to the TGMM binary output (if it already exists it will read that instead of the xmls)
-start_time=0										#Start Timepoint
-end_time=9											#End Timepoint
+path_to_xml = XML_finalResult_lht/ 											# Path to the TGMM xmls
+path_out = Outputs/Propagation/												# Output folder for SVF propagation
+anisotropy = 4																# Ratio of X and Y to Z (should be same as TGMM)
+path_bin_TGMM = Outputs/Propagation/TGMM_nonexistant_until_SVF_runs.bin		# Path to the TGMM binary output (if it already exists it will read that instead of the xmls)
+start_time = 0																# Start Timepoint
+end_time = 9																# End Timepoint

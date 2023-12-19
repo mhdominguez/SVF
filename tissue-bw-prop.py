@@ -5,6 +5,7 @@
 from IO import imread, imsave, SpatialImage
 from scipy import ndimage as nd
 import numpy as np
+import ast
 import os
 from multiprocessing import Pool
 from TGMMlibraries import lineageTree
@@ -140,44 +141,88 @@ def read_param_file():
         lines = f.readlines()
         f.close()
         param_dict = {}
-        i = 1
-        nb_lines = len(lines)
-        delimeter = lines[0]
-        delimeter = delimeter.rstrip()        
-        while i < nb_lines:
-            l = lines[i]
-            split_line = l.split(delimeter)
-            param_name = split_line[0]
+
+        for line in lines:
+            # Strip whitespace and ignore empty lines or lines starting with '#'
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+
+            # Split the line at '=' and strip whitespace
+            parts = line.split('=', 1)
+            if len(parts) != 2:
+                print(f"Warning: Line '{line}' is not in the expected format.")
+                continue
+
+            param_name, param_value = parts
+            param_name = param_name.strip()
+            param_value = param_value.split('#')[0].strip()  # Remove comment
+
+            #if '[' in param_value and ']' in param_value: #array
             if param_name in ['tissues_pixel_values', 'downsampling']:
-                name = param_name
-                out = []
-                while (name == param_name or param_name == '') and  i < nb_lines:
-                    if split_line[1].isdigit():
-                        out += [int(split_line[1])]
-                    else:
-                        out += [float(split_line[1])]
-                    i += 1
-                    if i < nb_lines:
-                        l = lines[i]
-                        split_line = l.split(delimeter)
-                        param_name = split_line[0]
-                param_dict[name] = np.array(out)
+                # Safely evaluate the string as a Python list
+                python_list = ast.literal_eval(input_str)
+
+                # Determine if the list contains floats or integers
+                is_float = any(isinstance(item, float) for item in python_list)
+
+                # Convert the list to a NumPy array with the appropriate data type
+                dtype = float if is_float else int
+                param_dict[param_name] = np.array(python_list, dtype=dtype)
+
             elif param_name in ['label_names']:
-                name = param_name
-                out = []
-                while (name == param_name or param_name == '') and  i < nb_lines:
-                    out += [split_line[1].replace('\n', '').replace('\r', '')]
-                    i += 1
-                    if i < nb_lines:
-                        l = lines[i]
-                        split_line = l.split(',')
-                        param_name = split_line[0]
-                param_dict[name] = np.array(out)
+                # Safely evaluate the string as a list
+                string_list = ast.literal_eval(input_str)
+
+                # Convert th list to a NumPy array of strings
+                param_dict[param_name] = np.aray(string_list, dtype=str)
+            elif 'time' in param_name:
+                if param_value.isdigit():
+                    param_dict[param_name] = int(param_value)
+                else:
+                    param_dict[param_name] = float(param_value)
             else:
-                param_dict[param_name] = split_line[1].strip()
-                i += 1
-            if param_name == 'time':
-                param_dict[param_name] = int(split_line[1])
+                param_dict[param_name] = param_value
+            #print( param_name + '=' + param_value )
+
+#        i = 1
+#        nb_lines = len(lines)
+#        delimeter = lines[0]
+#        delimeter = delimeter.rstrip()
+#        while i < nb_lines:
+#            l = lines[i]
+#            split_line = l.split(delimeter)
+#            param_name = split_line[0]
+#            if param_name in ['tissues_pixel_values', 'downsampling']:
+#                name = param_name
+#                out = []
+#                while (name == param_name or param_name == '') and  i < nb_lines:
+#                    if split_line[1].isdigit():
+#                        out += [int(split_line[1])]
+#                    else:
+#                        out += [float(split_line[1])]
+#                    i += 1
+#                    if i < nb_lines:
+#                        l = lines[i]
+#                        split_line = l.split(delimeter)
+#                        param_name = split_line[0]
+#                param_dict[name] = np.array(out)
+#            elif param_name in ['label_names']:
+#                name = param_name
+#                out = []
+#                while (name == param_name or param_name == '') and  i < nb_lines:
+#                    out += [split_line[1].replace('\n', '').replace('\r', '')]
+#                    i += 1
+#                    if i < nb_lines:
+#                        l = lines[i]
+#                        split_line = l.split(',')
+#                        param_name = split_line[0]
+#                param_dict[name] = np.array(out)
+#            else:
+#                param_dict[param_name] = split_line[1].strip()
+#                i += 1
+#            if param_name == 'time':
+#                param_dict[param_name] = int(split_line[1])
         path_LT = param_dict.get('path_to_LT', '.')
         path_VF = param_dict.get('path_to_VF', '.')
         path_mask = param_dict.get('path_to_mask', '.')
