@@ -269,7 +269,7 @@ def get_division_mapping(path_div, VF):
             ass_div.update(dict(list(zip(div_C, d))))
     return ass_div
 
-def write_DB(path_DB, path_div, VF, tracking_value, tb, te, path_bary):
+def write_DB(path_DB, path_div, VF, tracking_value, tracking_value_label,tb, te, path_bary):
     ''' Write the csv database in Database.csv
         Args:
             path_DB: string, path to the output database
@@ -305,7 +305,7 @@ def write_DB(path_DB, path_div, VF, tracking_value, tb, te, path_bary):
             
     ass_div = get_division_mapping(path_div, VF)
     f2 = open(path_DB + 'Database-Tissues.csv', 'w')
-    f2.write('id, mother_id, x, y, z, r, theta, phi, t, label, D-x, D-y, D-z, D-r, D-theta, D-phi\n')
+    f2.write('id, mother_id, x, y, z, r, theta, phi, t, label, pixel value, D-x, D-y, D-z, D-r, D-theta, D-phi\n')
     for t in range(tb, te+1):
         for c in VF.time_nodes[t]:
             S_p = (-1, -1, -1)
@@ -318,13 +318,14 @@ def write_DB(path_DB, path_div, VF, tracking_value, tb, te, path_bary):
             if path_bary is not None:
                 S_p = tuple(get_spherical_coordinates(*(barycenters[t] - VF.pos[c]))[:-1])
             L = tracking_value.get(c, -1)
+            L2 = tracking_value_label.get(c, -1)
             D_P = tuple(ass_div.get(c, [-1, -1, -1]))
             if path_bary is not None:
                 D_S_p = (-1, -1, -1) if not c in ass_div else tuple(get_spherical_coordinates(*(barycenters[t] - ass_div[c]))[:-1])
             else:
                 D_S_p = (-1, -1, -1)
-            f2.write(('%d, %d, %.5f, %.5f, %.5f, %.5f, %.5f, %.5f, %d, %d,' + 
-                      '%.5f, %.5f, %.5f, %.5f, %.5f, %.5f\n')%((c, M_id) + P + S_p + (t, L) + D_P + D_S_p))
+            f2.write(('%d, %d, %.5f, %.5f, %.5f, %.5f, %.5f, %.5f, %d, %d, %d,' +
+                      '%.5f, %.5f, %.5f, %.5f, %.5f, %.5f\n')%((c, M_id) + P + S_p + (t, L, L2) + D_P + D_S_p))
     f2.close()
 
 def get_barycenter(fname, tb, te):
@@ -429,6 +430,30 @@ if __name__ == '__main__':
 
     tracking_value = {k:np.sum(list(v)) for k, v in tracking_value.items() if len(v) == 1}
 
+    tracking_value_label = {}
+    for label, cs in init_cells.items():
+        actual_label = labels[label]  # Fetch the actual label value from 'labels'
+        for c in cs:
+            # Set the tracking value to the actual label value instead of the mask index
+            tracking_value_label[c] = actual_label
+
+            # Process successors and predecessors as before
+            # But instead of adding the mask index, we keep the actual label value constant
+            to_treat = [c]
+            while to_treat:
+                c_tmp = to_treat.pop()
+                next_cells = VF.successor.get(c_tmp, [])
+                to_treat += next_cells
+                for n in next_cells:
+                    tracking_value_label[n] = actual_label
+            to_treat = [c]
+            while to_treat:
+                c_tmp = to_treat.pop()
+                next_cells = VF.predecessor.get(c_tmp, [])
+                to_treat += next_cells
+                for n in next_cells:
+                    tracking_value_label[n] = actual_label
+
     write_to_am_2(path_out_am + '/seg_t%04d.am', VF, t_b= tb, t_e= te,
                 manual_labels = tracking_value, default_label = np.max(list(tracking_value.values()))+1,
                 length = 7)
@@ -436,4 +461,4 @@ if __name__ == '__main__':
     for im_p in masks:
         os.remove(im_p)
 
-    write_DB(path_DB, path_div, VF, tracking_value, tb, te, path_bary)
+    write_DB(path_DB, path_div, VF, tracking_value, tracking_value_label, tb, te, path_bary)
