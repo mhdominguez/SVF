@@ -124,18 +124,19 @@ def write_to_am_2(path_format, LT_to_print, t_b = None, t_e = None, length = 5, 
 def read_param_file():
     ''' Asks for, reads and formats the parameter file
     '''
-    if (sys.argv[1] is not None) and (sys.argv[1][-4:] == '.csv'):
+    if (sys.argv[1] is not None) and (os.path.exists(sys.argv[1])):
         f_names = [sys.argv[1]]
         #print f_names + "\n"
-    else:    
+    else:
         p_param = input('Please enter the path to the parameter file/folder:\n')
         p_param = p_param.replace('"', '')
         p_param = p_param.replace("'", '')
         p_param = p_param.replace(" ", '')
-        if p_param[-4:] == '.csv':
+        if p_param[-4:] == '.txt':
             f_names = [p_param]
         else:
-            f_names = [os.path.join(p_param, f) for f in os.listdir(p_param) if '.csv' in f and not '~' in f]
+            f_names = [os.path.join(p_param, f) for f in os.listdir(p_param) if '.txt' in f and not '~' in f]
+
     for file_name in f_names:
         f = open(file_name)
         lines = f.readlines()
