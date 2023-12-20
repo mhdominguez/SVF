@@ -3,14 +3,14 @@
 This repository contains the Statistical Vector Flow (SVF) package and the tissue propagation software published in *In toto imaging and reconstruction of post-implantation mouse development at the single-cell level*.  Now compatible with Python 3.x, it has been updated for easier terminal/console use, it can handle complex path names, is compatible with MaMuT v7, and there are other bugs fixes.  Note svf2MaMuT is now integrated into this SVF repository for easy setup.
 
 ## Description of the repository
-Folders:
+### Folders:
   - IO: The class `SpatialImage`, a container for images and input/output. When the right external libraries are installed (see bellow), can read tiff, hdf5, klb and inr images.
   - TGMMlibraries: The class `lineageTree`, a container for lineage trees and Statistical Vector Flow (SVF). Can read output data from TGMM.
   - csv-parameter-files: Example of parameterization csv files for each algorithms.
-Python files to be run IN ORDER:
-  - 1. SVF-prop.py: builds Statistical Vector Flow from a TGMM dataset.
-  - 2. tissue-bw-prop.py: propagates tissue information from a manually annotated 3D image.
-  - 3. SVF2MaMuT.py: exports results to MaMuT format for quantification and visualization.
+### Python files to be run IN ORDER:
+  1. SVF-prop.py: builds Statistical Vector Flow from a TGMM dataset.
+  2. tissue-bw-prop.py: propagates tissue information from a manually annotated 3D image.
+  3. SVF2MaMuT.py: exports results to MaMuT format for quantification and visualization.
 
 ## Basic usage
 Each of the python scripts proposed here can be run from a terminal in the sequence:
