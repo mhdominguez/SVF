@@ -54,3 +54,8 @@ Install-free preparation of SVF:
 git clone https://github.com/mhdominguez/SVF
 ```
 
+Unpack blank dataset for SVF / MaMuT reconstructions:
+```shell
+cd SVF
+tar -xzvf Blank\ Dataset.tar.gz
+```
