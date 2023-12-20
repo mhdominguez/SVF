@@ -162,7 +162,7 @@ def read_param_file():
             #if '[' in param_value and ']' in param_value: #array
             if param_name in ['tissues_pixel_values', 'downsampling']:
                 # Safely evaluate the string as a Python list
-                python_list = ast.literal_eval(input_str)
+                python_list = ast.literal_eval(param_value)
 
                 # Determine if the list contains floats or integers
                 is_float = any(isinstance(item, float) for item in python_list)
@@ -173,7 +173,7 @@ def read_param_file():
 
             elif param_name in ['label_names']:
                 # Safely evaluate the string as a list
-                string_list = ast.literal_eval(input_str)
+                string_list = ast.literal_eval(param_value)
 
                 # Convert th list to a NumPy array of strings
                 param_dict[param_name] = np.aray(string_list, dtype=str)
@@ -231,7 +231,7 @@ def read_param_file():
         path_out_am = param_dict.get('path_to_am', '.')
         labels = param_dict.get('tissues_pixel_values', [])
         DS = param_dict.get('downsampling', [])
-        ani = np.float(param_dict.get('anisotropy', 1.))
+        ani = float(param_dict.get('anisotropy', 1.))
         path_DB = param_dict.get('path_DB', '.')
         path_div = param_dict.get('path_div', None)
         path_bary = param_dict.get('path_bary', '')
