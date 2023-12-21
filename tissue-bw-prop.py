@@ -176,7 +176,7 @@ def read_param_file():
                 string_list = ast.literal_eval(param_value)
 
                 # Convert th list to a NumPy array of strings
-                param_dict[param_name] = np.aray(string_list, dtype=str)
+                param_dict[param_name] = np.array(string_list, dtype=str)
             elif 'time' in param_name:
                 if param_value.isdigit():
                     param_dict[param_name] = int(param_value)

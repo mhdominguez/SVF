@@ -1,0 +1,11 @@
+path_to_SVF = Outputs/Propagation/SVF.bin								# path to the SVF binary file
+path_to_DB = Outputs/Tissue_BW_output_DB/Database-Tissues.csv			# path to the database created by tissue-bw-prop.py
+path_output = ./SVF_to_MaMuT_output.xml									# path to the output
+tissue_names = [ 'F6negative', 'F6positive' ]							# mapping of the names of the tissues to the list of tissue ids from tissue-bw-prop
+filename = blank_bdv.xml												# name of the big data viewer xml config file
+folder = "/home/martin/Downloads/SVF/Blank Dataset/"					# path to the folder containing the big data viewer xml config file
+begin = 0																# first time point to take into account
+end = 9																	# last time point to take into account
+v_size = 0.380490285													# voxel size in microns
+dT = 6																	# time resolution in minutes
+do_mercator = 0															# Re-plot 3D coordinates as 2D mercator coordinates, requires barycenters established in tissue-bw-prop step

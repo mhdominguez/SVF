@@ -109,8 +109,7 @@ filteredtracks_end_template = '    </FilteredTracks>\n'
 
 # Template for ending the XML file.
 im_data_template = '<ImageData filename="{filename}" folder="{folder}" width="0" height="0" nslices="0" nframes="0" pixelwidth="1.0" pixelheight="1.0" voxeldepth="1.0" timeinterval="1.0" />'
-end_template = '''
-  </Model>
+end_template = '''</Model>
   <Settings>
     {image_data}
     <InitialSpotFilter feature="QUALITY" value="0.0" isabove="true" />
@@ -185,7 +184,7 @@ end_template = '''
     </SetupAssignments>
     <Bookmarks />
   </GUIState>
-  <DisplaySettings>{
+  <DisplaySettings>{{
   "name": "User-default",
   "spotUniformColor": "204, 51, 204, 255",
   "spotColorByType": "SPOTS",
@@ -212,13 +211,13 @@ end_template = '''
   "useAntialiasing": true,
   "spotVisible": true,
   "trackVisible": true,
-  "font": {
+  "font": {{
     "name": "Arial",
     "style": 1,
     "size": 12,
     "pointSize": 12.0,
     "fontSerializedDataVersion": 1
-  },
+  }},
   "lineThickness": 1.0,
   "selectionLineThickness": 4.0,
   "trackschemeBackgroundColor1": "128, 128, 128, 255",
@@ -228,6 +227,6 @@ end_template = '''
   "trackschemeFillBox": false,
   "spotFilled": false,
   "spotTransparencyAlpha": 1.0
-}</DisplaySettings>
+}}</DisplaySettings>
 </TrackMate>
 '''
