@@ -431,28 +431,11 @@ if __name__ == '__main__':
     tracking_value = {k:np.sum(list(v)) for k, v in tracking_value.items() if len(v) == 1}
 
     tracking_value_label = {}
-    for label, cs in init_cells.items():
-        actual_label = labels[label]  # Fetch the actual label value from 'labels'
-        for c in cs:
-            # Set the tracking value to the actual label value instead of the mask index
-            tracking_value_label[c] = actual_label
-
-            # Process successors and predecessors as before
-            # But instead of adding the mask index, we keep the actual label value constant
-            to_treat = [c]
-            while to_treat:
-                c_tmp = to_treat.pop()
-                next_cells = VF.successor.get(c_tmp, [])
-                to_treat += next_cells
-                for n in next_cells:
-                    tracking_value_label[n] = actual_label
-            to_treat = [c]
-            while to_treat:
-                c_tmp = to_treat.pop()
-                next_cells = VF.predecessor.get(c_tmp, [])
-                to_treat += next_cells
-                for n in next_cells:
-                    tracking_value_label[n] = actual_label
+    for cell, mask_index in tracking_value.items():
+        # Use mask_index to get the actual label from 'labels'
+        # Assuming 'labels' is a list or array where the index corresponds to the mask index
+        actual_label = labels[mask_index] if mask_index < len(labels) else -1
+        tracking_value_label[cell] = actual_label
 
     write_to_am_2(path_out_am + '/seg_t%04d.am', VF, t_b= tb, t_e= te,
                 manual_labels = tracking_value, default_label = np.max(list(tracking_value.values()))+1,
