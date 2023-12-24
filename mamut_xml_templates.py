@@ -32,7 +32,6 @@ begin_template = '''<?xml version="1.0" encoding="UTF-8"?>
         <Feature feature="SNR_CH1" name="Signal/Noise ratio ch1" shortname="SNR ch1" dimension="NONE" isint="false" />
         <Feature feature="CONTRAST_CH2" name="Contrast ch2" shortname="Ctrst ch2" dimension="NONE" isint="false" />
         <Feature feature="SNR_CH2" name="Signal/Noise ratio ch2" shortname="SNR ch2" dimension="NONE" isint="false" />
-        <Feature feature="TISSUE_NAME" name="Tissue name" shortname="Tis name" dimension="NONE" isint="false" />
         <Feature feature="TISSUE_TYPE" name="Tissue id" shortname="Tis id" dimension="NONE" isint="true" />
       </SpotFeatures>
       <EdgeFeatures>
@@ -47,7 +46,6 @@ begin_template = '''<?xml version="1.0" encoding="UTF-8"?>
         <Feature feature="EDGE_Y_LOCATION" name="Edge Y" shortname="Edge Y" dimension="POSITION" isint="false" />
         <Feature feature="EDGE_Z_LOCATION" name="Edge Z" shortname="Edge Z" dimension="POSITION" isint="false" />
         <Feature feature="MANUAL_EDGE_COLOR" name="Manual edge color" shortname="Edge color" dimension="NONE" isint="true" />
-        <Feature feature="TISSUE_NAME" name="Tissue name" shortname="Tis name" dimension="NONE" isint="false" />
         <Feature feature="TISSUE_TYPE" name="Tissue id" shortname="Tis id" dimension="NONE" isint="true" />
       </EdgeFeatures>
       <TrackFeatures>
@@ -87,7 +85,7 @@ begin_template = '''<?xml version="1.0" encoding="UTF-8"?>
 # Templates for spots.
 allspots_template =     '    <AllSpots nspots="{nspots}">\n'
 inframe_template =      '     <SpotsInFrame frame="{frame}">\n'
-spot_template =         '        <Spot ID="{id}" name="{name} SPOT_{id}" VISIBILITY="1" RADIUS="10.0" QUALITY="-1.0" SOURCE_ID="0" POSITION_T="{frame}.0" POSITION_X="{x}" POSITION_Y="{y}" FRAME="{frame}" POSITION_Z="{z}" TISSUE_TYPE="{t_id}" TISSUE_NAME="{t_name}" MANUAL_SPOT_COLOR="{t_color}" />\n'
+spot_template =         '        <Spot ID="{id}" name="{t_name} {id}" VISIBILITY="1" RADIUS="10.0" QUALITY="-1.0" SOURCE_ID="0" POSITION_T="{frame}.0" POSITION_X="{x}" POSITION_Y="{y}" FRAME="{frame}" POSITION_Z="{z}" TISSUE_TYPE="{t_id}" MANUAL_SPOT_COLOR="{t_color}" />\n'
 inframe_end_template =  '     </SpotsInFrame>\n'
 allspots_end_template = '    </AllSpots>\n'
 inframe_empty_template = '     <SpotsInFrame frame="{frame}" />\n'
@@ -95,7 +93,7 @@ inframe_empty_template = '     <SpotsInFrame frame="{frame}" />\n'
 # Templates for tracks and edges.
 alltracks_template =        '    <AllTracks>\n'
 track_template =            '      <Track name="Track_{id}" TRACK_INDEX="{id}" TRACK_ID="{id}" TRACK_DURATION="{duration}.0" TRACK_START="{start}" TRACK_STOP="{stop}.0" TRACK_DISPLACEMENT="{displacement}" NUMBER_SPOTS="{nspots}" NUMBER_GAPS="0" LONGEST_GAP="0" NUMBER_SPLITS="0" NUMBER_MERGES="0" NUMBER_COMPLEX="0" DIVISION_TIME_MEAN="NaN" DIVISION_TIME_STD="NaN">\n'
-edge_template =             '        <Edge SPOT_SOURCE_ID="{source_id}" SPOT_TARGET_ID="{target_id}" LINK_COST="-1.0" VELOCITY="{velocity}" DISPLACEMENT="{displacement}" TISSUE_TYPE="{t_id}" TIME="{time}" TISSUE_NAME="{t_name}" MANUAL_EDGE_COLOR="{t_color}" />\n'
+edge_template =             '        <Edge name="{t_name} {source_id}->{target_id}" SPOT_SOURCE_ID="{source_id}" SPOT_TARGET_ID="{target_id}" LINK_COST="-1.0" VELOCITY="{velocity}" DISPLACEMENT="{displacement}" TISSUE_TYPE="{t_id}" TIME="{time}" MANUAL_EDGE_COLOR="{t_color}" />\n'
 # edge_template =             '        <Edge SPOT_SOURCE_ID="{source_id}" SPOT_TARGET_ID="{target_id}" LINK_COST="-1.0" VELOCITY="{velocity}" DISPLACEMENT="{displacement}" />\n'
 track_end_template =        '      </Track>\n'
 alltracks_end_template =    '    </AllTracks>\n'

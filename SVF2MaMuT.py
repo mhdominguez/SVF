@@ -345,7 +345,7 @@ def main():
                                                       x=SVF.pos[c][0]-abs_center[0],
                                                       y=SVF.pos[c][1]-abs_center[1],
                                                       z=SVF.pos[c][2]-abs_center[2],
-                                                      t_name=tissue_names[int(tracking_value[c])], #t_id_2_N.get(tracking_value[c], '?')
+                                                      t_name=tissue_names[int(tracking_value[c])],
                                                       t_color=this_spot_color
                                                       ))
                 output.write(inframe_end_template)
@@ -389,8 +389,7 @@ def main():
                 displacement = np.linalg.norm(SVF.pos[c] - SVF.pos[SVF.successor[c][0]]) * v_size
                 velocity = displacement / dT
                 output.write(edge_template.format(source_id=c, target_id=SVF.successor[c][0],
-                                                  # t_name=t_id_2_N.get(tracking_value[c], '?'),
-                                                  t_name=tissue_names[int(tracking_value[c])], #t_id_2_N.get(tracking_value[c], '?')
+                                                  t_name=tissue_names[int(tracking_value[c])],
                                                   t_color=this_spot_color,
                                                   velocity=velocity, displacement=displacement,
                                                   t_id=tracking_value[c], time=SVF.time[c]))
@@ -406,7 +405,6 @@ def main():
         output.write(filteredtracks_end_template)
 
         # End XML file.
-        print( folder )
         output.write(end_template.format(image_data=im_data_template.format(filename=filename, folder=folder)))
 
 if __name__ == '__main__':
