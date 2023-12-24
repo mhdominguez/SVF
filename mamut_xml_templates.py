@@ -109,7 +109,7 @@ filteredtracks_end_template = '    </FilteredTracks>\n'
 
 # Template for ending the XML file.
 im_data_template = '<ImageData filename="{filename}" folder="{folder}" width="0" height="0" nslices="0" nframes="0" pixelwidth="1.0" pixelheight="1.0" voxeldepth="1.0" timeinterval="1.0" />'
-end_template = '''</Model>
+end_template = '''  </Model>
   <Settings>
     {image_data}
     <InitialSpotFilter feature="QUALITY" value="0.0" isabove="true" />
@@ -142,7 +142,7 @@ end_template = '''</Model>
       </TrackAnalyzers>
     </AnalyzerCollection>
   </Settings>
- <GUIState>
+  <GUIState>
     <View key="MaMuT Viewer" x="926" y="270" width="790" height="600" />
     <SetupAssignments>
       <ConverterSetups>

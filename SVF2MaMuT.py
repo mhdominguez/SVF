@@ -406,6 +406,7 @@ def main():
         output.write(filteredtracks_end_template)
 
         # End XML file.
+        print( folder )
         output.write(end_template.format(image_data=im_data_template.format(filename=filename, folder=folder)))
 
 if __name__ == '__main__':
