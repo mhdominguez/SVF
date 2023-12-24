@@ -1,9 +1,11 @@
 from TGMMlibraries import lineageTree
 import numpy as np
 import os
+import re
 import ast
 from mamut_xml_templates import *
 import sys
+import random
 
 def read_param_file():
     if (sys.argv[1] is not None) and (os.path.exists(sys.argv[1])):
@@ -109,7 +111,7 @@ def read_param_file():
         path_SVF = param_dict.get('path_to_SVF', '.')
         path_DB = param_dict.get('path_to_DB', '')
         path_output = param_dict.get('path_output', '.')
-        path_LUT= param_dict.get('path_lut', '.')
+        path_LUT= param_dict.get('path_to_lut', '.')
         #tissue_ids = param_dict.get('tissue_ids', [])
         tissue_names = param_dict.get('tissue_names', [])
         begin = int(param_dict.get('begin', None))
@@ -122,6 +124,128 @@ def read_param_file():
 
     return (path_SVF, path_DB, path_output, path_LUT,
         tissue_names, begin, end, filename, folder, v_size, dT, do_mercator)
+
+def read_imagej_lut(file_path):
+    #file_path = Path(file_path)
+
+    # Try reading the file as an ASCII LUT
+    try:
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+
+        # Check if the first line is numeric, indicating no header
+        header_line_count = 0
+        for line in lines:
+            try:
+                # Attempt to parse the line as numbers, splitting on whitespace
+                _ = [float(x) for x in re.split('\s+', line.strip())]
+                break  # Break if successful, indicating no header
+            except ValueError:
+                header_line_count += 1  # Non-numeric line, likely a header
+        # Determine the number of columns in the LUT file
+        sample_line = lines[header_line_count].strip()  # Use first non-header line
+        num_columns = len(re.split('\s+', sample_line))
+        lut = np.zeros((256, 3), dtype=int)
+        for line in lines[header_line_count:]:  # Start after the header
+            parts = re.split('\s+', line.strip())
+            if num_columns == 4:
+                index, r, g, b = map(int, parts)
+            elif num_columns == 3:
+                r, g, b = map(int, parts)
+                index = len(lut)  # Use the current length as the index
+            lut[index] = [r, g, b]
+
+        return lut  # Normalize the RGB values to the range [0, 1]
+
+    except Exception as e:
+        pass
+
+    # Try reading the file as a binary LUT
+    try:
+        file_size = os.path.getsize(file_path)
+        dtype = np.dtype("B")
+
+        with open(file_path, "rb") as f:
+            if file_size == 768:  # Standard 768-byte LUT
+                numpy_data = np.fromfile(f, dtype)
+                return numpy_data.reshape(256, 3)
+
+            elif file_size > 768:  # Potentially NIH Image LUT or other format
+                # Check for NIH Image LUT header (32 bytes)
+                header = f.read(32)
+                if header.startswith(b'ICOL'):  # NIH Image LUT identified by 'ICOL'
+                    numpy_data = np.fromfile(f, dtype)
+                    return numpy_data.reshape(256, 3)
+                else:
+                    # Handle other non-standard formats here
+                    print("Non-standard LUT format detected in " + file_path + ", will use random spot/edge colors.")
+                    return None
+
+            else:  # File size does not match expected LUT sizes
+                print("Unexpected LUT file size in " + file_path + ", will use random spot/edge colors.")
+                return None
+
+    except IOError:
+        print("Error while opening " + file_path + ", will use random spot/edge colors.")
+        return None
+
+    return None  # Return None if both attempts fail
+
+
+def MaMuTdec_to_hex(value):
+    return f"0x{value + 16777216:06X}"
+
+def hex_to_MaMuTdec(hex_value):
+    return int(hex_value, 16) - 16777216
+
+def hex_to_RGB(hex_value):
+    if len(hex_value) == 8 and hex_value.startswith('0x'):
+        r = int(hex_value[2:4], 16)
+        g = int(hex_value[4:6], 16)
+        b = int(hex_value[6:8], 16)
+        return r, g, b
+    else:
+        print(f"hex_to_RGB: bad number format: {hex_value}!")
+
+def RGB_to_hex( rgb_array ):
+    if all(0 <= x < 256 for x in rgb_array):
+        return f"0x{rgb_array[0]:02X}{rgb_array[1]:02X}{rgb_array[2]:02X}"
+    else:
+        print(f"RGB_to_hex: bad number format: ({r}, {g}, {b})!")
+
+random_rgb_index = int(random.random() * 3)
+def random_color():
+    global random_rgb_index
+    initial_color = [ int(random.random() * 256), int(random.random() * 256), int(random.random() * 256) ]
+
+    while sum( initial_color ) < 128 :
+        initial_color = sorted( initial_color )
+        initial_color[0] = int(random.random() * 256)
+
+    return_color = [0,0,0]
+    initial_color = sorted( initial_color )
+    return_color[ random_rgb_index ] = initial_color[2]
+
+    random_rgb_index += 1
+    while random_rgb_index > 2:
+        random_rgb_index -= 3
+
+    if random.random() > 0.5:
+        return_color[ random_rgb_index ]  = initial_color[1]
+        random_rgb_index += 1
+        while random_rgb_index > 2:
+            random_rgb_index -= 3
+        return_color[ random_rgb_index ]  = initial_color[0]
+    else:
+        return_color[ random_rgb_index ]  = initial_color[0]
+        random_rgb_index += 1
+        while random_rgb_index > 2:
+            random_rgb_index -= 3
+        return_color[ random_rgb_index ]  = initial_color[1]
+
+    return return_color
+
+
 
 def main():
     try:
@@ -141,6 +265,7 @@ def main():
     if os.path.exists(path_to_DB):
         DATA = np.loadtxt(path_to_DB, delimiter = ',', skiprows = 1, usecols = (0, 6,7, 9, 10))
         tracking_value = dict(DATA[:, (0, 3)])
+        tracking_value_lut =  dict(DATA[:, (0, 4)])
         sphere_coord_theta = dict(DATA[:, (0, 1)])
         sphere_coord_phi = dict(DATA[:, (0, 2)])
         kept_nodes = [c for c in SVF.nodes if tracking_value[c] >= 0]
@@ -150,7 +275,16 @@ def main():
         kept_nodes = SVF.nodes
         kept_nodes_set = set(kept_nodes)
         tracking_value = {c:1 for c in kept_nodes}
+        tracking_value_lut = tracking_value
 
+    # read in LUT and map RGB colors to each tracking_value
+    lut = read_imagej_lut(path_LUT)
+#    all_tracking_value_lut = sorted(set(tracking_value_lut))
+#    try:
+#        spot_colors = [ hex_to_MaMuTdec( RGB_to_hex( lut[item] ) ) for item in all_tracking_value_lut ]
+#    except IndexError:
+#        spot_colors = hex_to_MaMuTdec( RGB_to_hex( random_color() ) )
+#
 
     kept_times = list(range(begin, end+1))
     first_nodes = [c for c in SVF.time_nodes[min(kept_times)] if c in kept_nodes_set]
@@ -195,13 +329,24 @@ def main():
                 for c in cells:
                     #c_value = tracking_value[c]  # Use get() to handle cases where c is not in tracking_value
 
+                    # get manual spot color
+                    try:
+                        this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
+                    except ValueError:
+                        # Value not found in the original vector
+                        try:
+                            lut[int(tracking_value_lut[c])] = random_color()
+                            this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
+                        except ValueError:
+                            this_spot_color = -1
+
                     #print(f"C: {c} {c_value}")
                     output.write(spot_template.format(id=c, name=c, frame=t, t_id=tracking_value[c],
                                                       x=SVF.pos[c][0]-abs_center[0],
                                                       y=SVF.pos[c][1]-abs_center[1],
                                                       z=SVF.pos[c][2]-abs_center[2],
                                                       t_name=tissue_names[int(tracking_value[c])], #t_id_2_N.get(tracking_value[c], '?')
-                                                      t_color=-65535
+                                                      t_color=this_spot_color
                                                       ))
                 output.write(inframe_end_template)
             else:
@@ -230,12 +375,23 @@ def main():
                                                start=SVF.time[track[0]], stop=stop, nspots=len(track),
                                                displacement=np.linalg.norm(SVF.pos[track[0]]-SVF.pos[track[-1]])))
             for c in track[:-1]:
+                # get manual spot color
+                try:
+                    this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
+                except ValueError:
+                    # Value not found in the original vector
+                    try:
+                       lut[int(tracking_value_lut[c])] = random_color()
+                       this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
+                    except ValueError:
+                       this_spot_color = -1
+
                 displacement = np.linalg.norm(SVF.pos[c] - SVF.pos[SVF.successor[c][0]]) * v_size
                 velocity = displacement / dT
                 output.write(edge_template.format(source_id=c, target_id=SVF.successor[c][0],
                                                   # t_name=t_id_2_N.get(tracking_value[c], '?'),
                                                   t_name=tissue_names[int(tracking_value[c])], #t_id_2_N.get(tracking_value[c], '?')
-                                                  t_color=-65535,
+                                                  t_color=this_spot_color,
                                                   velocity=velocity, displacement=displacement,
                                                   t_id=tracking_value[c], time=SVF.time[c]))
             output.write(track_end_template)
