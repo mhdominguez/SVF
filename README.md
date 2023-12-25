@@ -6,7 +6,7 @@ This repository contains the Statistical Vector Flow (SVF) package and the tissu
 ### Folders:
   - IO: The class `SpatialImage`, a container for images and input/output. When the right external libraries are installed (see bellow), can read tiff, hdf5, klb and inr images.
   - TGMMlibraries: The class `lineageTree`, a container for lineage trees and Statistical Vector Flow (SVF). Can read output data from TGMM.
-  - csv-parameter-files: Example of parameterization csv files for each algorithms.
+  - config-files: Example of parameter files for each scripted algorithm.
 ### Python files to be run IN ORDER:
   1. SVF-prop.py: builds Statistical Vector Flow from a TGMM dataset.
   2. tissue-bw-prop.py: propagates tissue information from a manually annotated 3D image.
