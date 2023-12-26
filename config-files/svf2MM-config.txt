@@ -10,3 +10,4 @@ end = 9																	# last time point to take into account
 v_size = 0.380490285													# voxel size in microns
 dT = 6																	# time resolution in minutes
 do_mercator = 0															# Re-plot 3D coordinates as 2D mercator coordinates, requires barycenters established in tissue-bw-prop step
+spot_radius = 7.5														# radius of all spots in MaMuT for 3d viewing: if denser spots suggest lower number, with sparser spots suggest higher number

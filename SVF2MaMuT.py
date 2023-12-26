@@ -6,10 +6,11 @@ import ast
 from mamut_xml_templates import *
 import sys
 import random
+import argparse
 
-def read_param_file():
-    if (sys.argv[1] is not None) and (os.path.exists(sys.argv[1])):
-        f_names = [sys.argv[1]]
+def read_param_file(config_path):
+    if (config_path is not None) and (os.path.exists(config_path)):
+        f_names = [config_path]
         #print f_names + "\n"
     else:
         p_param = input('Please enter the path to the parameter file/folder:\n')
@@ -121,9 +122,10 @@ def read_param_file():
         folder = param_dict.get('folder', '.')
         v_size = float(param_dict.get('v_size', 0.))
         dT = float(param_dict.get('dT', 1.))
+        spot_radius_setting = float(param_dict.get('spot_radius', 7.5))
 
     return (path_SVF, path_DB, path_output, path_LUT,
-        tissue_names, begin, end, filename, folder, v_size, dT, do_mercator)
+        tissue_names, begin, end, filename, folder, v_size, dT, do_mercator, spot_radius_setting)
 
 def read_imagej_lut(file_path):
     #file_path = Path(file_path)
@@ -246,11 +248,33 @@ def random_color():
     return return_color
 
 
+def parse_command_line_arguments():
+    parser = argparse.ArgumentParser(description='Process include, only, and exclude arguments, and config file path.')
+
+    # Positional argument for the config file path or any other required parameter
+    parser.add_argument('config_file', type=str, help='Path to the config file')
+
+    # other arguments
+    parser.add_argument('--include', type=str, default='', help='Comma-separated list of node IDs to include')
+    parser.add_argument('--only', type=str, default='', help='Comma-separated list of node IDs to exclusively include')
+    parser.add_argument('--exclude', type=str, default='', help='Comma-separated list of node IDs to exclude')
+
+    args = parser.parse_args()
+    return {
+        'config_file': args.config_file,
+        'include': [int(x) for x in args.include.split(',') if x],
+        'only': [int(x) for x in args.only.split(',') if x],
+        'exclude': [int(x) for x in args.exclude.split(',') if x]
+    }
+
 
 def main():
+    # Parse command line arguments
+    args = parse_command_line_arguments()
+    print( args['config_file'] )
     try:
         (path_SVF, path_to_DB, path_output, path_LUT,
-            tissue_names, begin, end, filename, folder, v_size, dT, do_mercator) = read_param_file()
+            tissue_names, begin, end, filename, folder, v_size, dT, do_mercator, spot_radius_setting) = read_param_file(args['config_file'])
     except Exception as e:
         print("Failed at reading the configuration file.")
         print("Error: %s"%e)
@@ -258,33 +282,34 @@ def main():
     
     SVF = lineageTree(path_SVF)
 
-    # f = open(path_to_DB)
-    # lines = f.readline()
-    # f.close()
-    #print "Do mercator %s"%do_mercator
     if os.path.exists(path_to_DB):
         DATA = np.loadtxt(path_to_DB, delimiter = ',', skiprows = 1, usecols = (0, 6,7, 9, 10))
         tracking_value = dict(DATA[:, (0, 3)])
         tracking_value_lut =  dict(DATA[:, (0, 4)])
         sphere_coord_theta = dict(DATA[:, (0, 1)])
         sphere_coord_phi = dict(DATA[:, (0, 2)])
+
+        # set up kept_nodes
         kept_nodes = [c for c in SVF.nodes if tracking_value[c] >= 0]
-        kept_nodes_set = set(kept_nodes)
-        #t_id_2_N = dict(list(zip(tissue_ids, tissue_names)))
     else:
         kept_nodes = SVF.nodes
-        kept_nodes_set = set(kept_nodes)
+
         tracking_value = {c:1 for c in kept_nodes}
         tracking_value_lut = tracking_value
 
+    # handle subsets of the dataset by tissue
+    if args['only']:
+        kept_nodes = [c for c in kept_nodes if tracking_value[c] in args['only']]
+    elif args['include']:
+        kept_nodes = [c for c in kept_nodes if tracking_value[c] in args['include']]
+    elif args['exclude']:
+        kept_nodes = [c for c in kept_nodes if tracking_value[c] not in args['exclude']]
+
+    kept_nodes_set = set(kept_nodes)
+
     # read in LUT and map RGB colors to each tracking_value
     lut = read_imagej_lut(path_LUT)
-#    all_tracking_value_lut = sorted(set(tracking_value_lut))
-#    try:
-#        spot_colors = [ hex_to_MaMuTdec( RGB_to_hex( lut[item] ) ) for item in all_tracking_value_lut ]
-#    except IndexError:
-#        spot_colors = hex_to_MaMuTdec( RGB_to_hex( random_color() ) )
-#
+
 
     kept_times = list(range(begin, end+1))
     first_nodes = [c for c in SVF.time_nodes[min(kept_times)] if c in kept_nodes_set]
@@ -346,7 +371,8 @@ def main():
                                                       y=SVF.pos[c][1]-abs_center[1],
                                                       z=SVF.pos[c][2]-abs_center[2],
                                                       t_name=tissue_names[int(tracking_value[c])],
-                                                      t_color=this_spot_color
+                                                      t_color=this_spot_color,
+                                                      radius=spot_radius_setting
                                                       ))
                 output.write(inframe_end_template)
             else:
