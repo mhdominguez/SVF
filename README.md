@@ -19,7 +19,7 @@ Each of the python scripts proposed here can be run from a terminal in the seque
 
 `python3 /path/to/SVF/tissue-bw-prop.py config-files/tissue-bw-prop-config.txt`
 
-`python3 /path/to/SVF/SVF2MaMuT.py config-files/svf2MM-config.txt`
+`python3 /path/to/SVF/SVF2MaMuT.py config-files/svf2MM-config.txt [--only=x,y] [--exclude=x,y]` where x and y are tissue mask colors intended to create a subset by tissue
 
 The user should modify the parameter files prior to running with the correct information.
 
