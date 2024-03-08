@@ -357,12 +357,12 @@ def main():
                     # get manual spot color
                     try:
                         this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
-                    except ValueError:
+                    except (ValueError, TypeError):
                         # Value not found in the original vector
                         try:
                             lut[int(tracking_value_lut[c])] = random_color()
                             this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
-                        except ValueError:
+                        except (ValueError, TypeError):
                             this_spot_color = -1
 
                     #print(f"C: {c} {c_value}")
@@ -404,12 +404,12 @@ def main():
                 # get manual spot color
                 try:
                     this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
-                except ValueError:
+                except (ValueError, TypeError):
                     # Value not found in the original vector
                     try:
                        lut[int(tracking_value_lut[c])] = random_color()
                        this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
-                    except ValueError:
+                    except (ValueError, TypeError):
                        this_spot_color = -1
 
                 displacement = np.linalg.norm(SVF.pos[c] - SVF.pos[SVF.successor[c][0]]) * v_size
