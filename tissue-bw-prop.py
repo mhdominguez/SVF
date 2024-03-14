@@ -403,7 +403,7 @@ if __name__ == '__main__':
             mask = imread(path_mask)
         max_vals = np.array(mask.shape) - 1
         for c in VF.time_nodes[t]:
-            pos_rounded = np.floor(VF.pos[c]/(np.array(DS)*[1.,1.,ani])).astype(np.int)
+            pos_rounded = np.floor(VF.pos[c]/(np.array(DS)*[1.,1.,ani])).astype(int)
             pos_rounded = tuple(np.min([max_vals, pos_rounded], axis = 0))
             if mask[pos_rounded]:
                 init_cells[i].add(c)

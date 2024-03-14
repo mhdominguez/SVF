@@ -8,6 +8,9 @@ import sys
 import random
 import argparse
 
+
+
+
 def read_param_file(config_path):
     if (config_path is not None) and (os.path.exists(config_path)):
         f_names = [config_path]
@@ -128,70 +131,72 @@ def read_param_file(config_path):
         tissue_names, begin, end, filename, folder, v_size, dT, do_mercator, spot_radius_setting)
 
 def read_imagej_lut(file_path):
-    #file_path = Path(file_path)
-
-    # Try reading the file as an ASCII LUT
+    # Attempt to determine the file format by reading a small sample
+    is_ascii = True
     try:
-        with open(file_path, 'r') as f:
-            lines = f.readlines()
-
-        # Check if the first line is numeric, indicating no header
-        header_line_count = 0
-        for line in lines:
-            try:
-                # Attempt to parse the line as numbers, splitting on whitespace
-                _ = [float(x) for x in re.split('\s+', line.strip())]
-                break  # Break if successful, indicating no header
-            except ValueError:
-                header_line_count += 1  # Non-numeric line, likely a header
-        # Determine the number of columns in the LUT file
-        sample_line = lines[header_line_count].strip()  # Use first non-header line
-        num_columns = len(re.split('\s+', sample_line))
-        lut = np.zeros((256, 3), dtype=int)
-        for line in lines[header_line_count:]:  # Start after the header
-            parts = re.split('\s+', line.strip())
-            if num_columns == 4:
-                index, r, g, b = map(int, parts)
-            elif num_columns == 3:
-                r, g, b = map(int, parts)
-                index = len(lut)  # Use the current length as the index
-            lut[index] = [r, g, b]
-
-        return lut  # Normalize the RGB values to the range [0, 1]
-
-    except Exception as e:
-        pass
-
-    # Try reading the file as a binary LUT
-    try:
-        file_size = os.path.getsize(file_path)
-        dtype = np.dtype("B")
-
-        with open(file_path, "rb") as f:
-            if file_size == 768:  # Standard 768-byte LUT
-                numpy_data = np.fromfile(f, dtype)
-                return numpy_data.reshape(256, 3)
-
-            elif file_size > 768:  # Potentially NIH Image LUT or other format
-                # Check for NIH Image LUT header (32 bytes)
-                header = f.read(32)
-                if header.startswith(b'ICOL'):  # NIH Image LUT identified by 'ICOL'
-                    numpy_data = np.fromfile(f, dtype)
-                    return numpy_data.reshape(256, 3)
-                else:
-                    # Handle other non-standard formats here
-                    print("Non-standard LUT format detected in " + file_path + ", will use random spot/edge colors.")
-                    return None
-
-            else:  # File size does not match expected LUT sizes
-                print("Unexpected LUT file size in " + file_path + ", will use random spot/edge colors.")
-                return None
-
-    except IOError:
+        with open(file_path, 'rb') as f:
+            sample = f.read(1024)  # Read the first 1024 bytes
+            is_ascii = all(32 <= b <= 127 or b in (9, 10, 13) for b in sample)  # Check if sample is ASCII
+    except IOError as e:
         print("Error while opening " + file_path + ", will use random spot/edge colors.")
         return None
+        #raise IOError(f"Error reading file {file_path}: {e}")
 
-    return None  # Return None if both attempts fail
+    if is_ascii:
+        # Process as ASCII LUT
+        try:
+            with open(file_path, 'r') as f:
+                lines = f.readlines()
+
+            # Check if the first line is numeric, indicating no header
+            header_line_count = 0
+            for line in lines:
+                if re.match(r"^\d+", line.strip()):
+                    break  # First line is numeric, indicating no header
+                else:
+                    header_line_count += 1  # Non-numeric line, likely a header
+
+            # Determine the number of columns in the LUT file
+            sample_line = lines[header_line_count].strip()  # Use first non-header line
+            num_columns = len(re.split('\\s+', sample_line))
+            lut = np.zeros((len(lines) - header_line_count, 3), dtype=int)
+
+            for i, line in enumerate(lines[header_line_count:]):
+                parts = re.split('\\s+', line.strip())
+                if num_columns == 4:
+                    index, r, g, b = map(int, parts)
+                elif num_columns == 3:
+                    r, g, b = map(int, parts)
+                    index = i  # Use the line number as the index
+                lut[index] = [r, g, b]
+
+            return lut
+        except Exception as e:
+            print("Error while opening " + file_path + ", will use random spot/edge colors.")
+            return None
+            #raise ValueError(f"Failed to process ASCII LUT file {file_path}: {e}")
+
+    else:
+        # Process as binary LUT
+        try:
+            file_size = os.path.getsize(file_path)
+            if file_size != 768:
+                raise ValueError("Expected binary LUT file size of 768 bytes.")
+
+            with open(file_path, "rb") as f:
+                lut = np.fromfile(f, dtype=np.uint8)
+
+            if len(lut) != 768:
+                raise ValueError("Binary LUT file does not contain 768 bytes as expected.")
+
+            lut = lut.reshape((256, 3))  # Assuming 256 entries with 3 channels (R, G, B)
+            return lut
+        except Exception as e:
+            print("Error while opening " + file_path + ", will use random spot/edge colors.")
+            return None
+            #raise ValueError(f"Failed to process binary LUT file {file_path}: {e}")
+
+    return None
 
 
 def MaMuTdec_to_hex(value):
@@ -309,7 +314,10 @@ def main():
 
     # read in LUT and map RGB colors to each tracking_value
     lut = read_imagej_lut(path_LUT)
-
+    if lut is None:
+        lut = np.zeros( (256, 3), dtype=int)
+        for i in range(256):
+            lut[i] = random_color()
 
     kept_times = list(range(begin, end+1))
     first_nodes = [c for c in SVF.time_nodes[min(kept_times)] if c in kept_nodes_set]
@@ -357,12 +365,12 @@ def main():
                     # get manual spot color
                     try:
                         this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
-                    except (ValueError, TypeError):
+                    except ValueError:
                         # Value not found in the original vector
                         try:
                             lut[int(tracking_value_lut[c])] = random_color()
                             this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
-                        except (ValueError, TypeError):
+                        except ValueError:
                             this_spot_color = -1
 
                     #print(f"C: {c} {c_value}")
@@ -404,12 +412,12 @@ def main():
                 # get manual spot color
                 try:
                     this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
-                except (ValueError, TypeError):
+                except ValueError:
                     # Value not found in the original vector
                     try:
                        lut[int(tracking_value_lut[c])] = random_color()
                        this_spot_color = hex_to_MaMuTdec( RGB_to_hex( lut[int(tracking_value_lut[c])] ) )
-                    except (ValueError, TypeError):
+                    except ValueError:
                        this_spot_color = -1
 
                 displacement = np.linalg.norm(SVF.pos[c] - SVF.pos[SVF.successor[c][0]]) * v_size
