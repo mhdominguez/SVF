@@ -342,13 +342,13 @@ def main():
                    SVF.pos[c][2] = 0.0
                    Q += [SVF.pos[c]]
             abs_center = np.median(Q,axis=0)  
-        elif v_size > 0:
-            for t in kept_times:
-               for c in SVF.time_nodes[t]:
-                   SVF.pos[c][0] *= v_size
-                   SVF.pos[c][1] *= v_size
-                   SVF.pos[c][2] *= v_size
         else:
+            if v_size > 0:
+                for t in kept_times:
+                    for c in SVF.time_nodes[t]:
+                        SVF.pos[c][0] *= v_size
+                        SVF.pos[c][1] *= v_size
+                        SVF.pos[c][2] *= v_size
             for t in kept_times:
                for c in SVF.time_nodes[t]:
                    Q += [SVF.pos[c]]
